@@ -1,16 +1,22 @@
-[project]
-name = "movie rating"
+[tool.poetry]
+name = "movie_rating"
 version = "0.1.0"
 description = ""
-authors = [
-    {name = "Yeganeh-Mohammadi",email = "yegi.mohamadi.8@gmail.com"}
-]
+authors = ["Yeganeh-Mohammadi <yegi.mohamadi.8@gmail.com>"]
 readme = "README.md"
-requires-python = ">=3.13"
-dependencies = [
+packages = [
+	{ include = "app" }
 ]
 
+[tool.poetry.dependencies]
+python = ">=3.13"
+fastapi = "^0.127.0"
+uvicorn = "^0.40.0"
+sqlalchemy = "^2.0.45"
+psycopg2-binary = "^2.9.11"
+alembic = "^1.17.2"
+python-dotenv = "^1.2.1"
 
 [build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0"]
+requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"

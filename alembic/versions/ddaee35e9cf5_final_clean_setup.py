@@ -1,8 +1,8 @@
-"""create initial tables
+"""final_clean_setup
 
-Revision ID: 37232b8a841a
-Revises: 
-Create Date: 2025-12-25 10:03:40.240358
+Revision ID: ddaee35e9cf5
+Revises: 2c207e05f1f1
+Create Date: 2025-12-25 12:39:20.225945
 
 """
 from typing import Sequence, Union
@@ -12,8 +12,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '37232b8a841a'
-down_revision: Union[str, Sequence[str], None] = None
+revision: str = 'ddaee35e9cf5'
+down_revision: Union[str, Sequence[str], None] = '2c207e05f1f1'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
@@ -57,7 +57,9 @@ def upgrade() -> None:
     op.create_table('movie_ratings',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('movie_id', sa.Integer(), nullable=True),
+    sa.Column('user_id', sa.Integer(), nullable=True),
     sa.Column('score', sa.Integer(), nullable=False),
+    sa.Column('comment', sa.String(), nullable=True),
     sa.ForeignKeyConstraint(['movie_id'], ['movies.id'], ),
     sa.PrimaryKeyConstraint('id')
     )

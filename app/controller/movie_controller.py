@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from app.db.database import get_db
 from app.services.movie_service import MovieService
 from app.schemas.movie import MovieResponse, MovieCreate
-from typing import List, Optional 
+from typing import List, Optional
 
 router = APIRouter(prefix="/movies", tags=["Movies"])
 
@@ -14,8 +14,7 @@ def read_movies(
     title: Optional[str] = None,
     year: Optional[int] = None,
     genre: Optional[str] = None,
-    db: Session = Depends(get_db)
-):
+    db: Session = Depends(get_db)):
     return MovieService.list_movies(db, page, size, title, year, genre)
 
 @router.post("/", response_model=MovieResponse, status_code=status.HTTP_201_CREATED)

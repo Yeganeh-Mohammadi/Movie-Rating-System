@@ -12,6 +12,5 @@ class MovieCreate(MovieBase):
 
 class MovieResponse(MovieBase):
     id: int
-    # برای نمایش ژانرها در خروجی
     class Config:
         from_attributes = True

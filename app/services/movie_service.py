@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
 from app.repositories.movie_repository import MovieRepository
+from app.schemas.movie import MovieCreate, RatingCreate 
 
 class MovieService:
     @staticmethod
@@ -10,3 +11,7 @@ class MovieService:
     @staticmethod
     def add_movie(db: Session, movie_data):
         return MovieRepository.create(db, movie_data)
+    
+    @staticmethod
+    def add_rating(db: Session, rating_data: RatingCreate, movie_id: int):
+        return MovieRepository.create_rating(db, rating_data, movie_id)

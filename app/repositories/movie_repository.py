@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
-from app.models.models import Movie, Genre
-from app.schemas.movie import MovieCreate
+from app.models.models import Movie, Genre, MovieRating
+from app.schemas.movie import MovieCreate, RatingCreate 
 
 class MovieRepository:
     @staticmethod
@@ -29,3 +29,20 @@ class MovieRepository:
         db.commit()
         db.refresh(db_movie)
         return db_movie
+    
+    @staticmethod
+    def create_rating(db: Session, rating_data: RatingCreate, movie_id: int):
+        db_rating = MovieRating(
+            score=rating_data.score,
+            comment=rating_data.comment,
+            user_id=rating_data.user_id,
+            movie_id=movie_id
+        )
+        db.add(db_rating)
+        db.commit()
+        db.refresh(db_rating)
+        return db_rating
+
+    @staticmethod
+    def get_movie_by_id(db: Session, movie_id: int): # برای چک کردن وجود فیلم لازم است
+        return db.query(Movie).filter(Movie.id == movie_id).first()

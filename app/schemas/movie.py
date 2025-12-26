@@ -12,6 +12,9 @@ class MovieCreate(MovieBase):
 
 class MovieResponse(MovieBase):
     id: int
+    # فیلد زیر برای نمایش میانگین نمرات اضافه می‌شود
+    average_rating: Optional[float] = Field(0.0, description="میانگین امتیازات فیلم")
+
     class Config:
         from_attributes = True
 

@@ -15,3 +15,7 @@ class MovieService:
     @staticmethod
     def add_rating(db: Session, rating_data: RatingCreate, movie_id: int):
         return MovieRepository.create_rating(db, rating_data, movie_id)
+    
+    @staticmethod
+    def get_movie_by_id(db: Session, movie_id: int):
+        return MovieRepository.get_movie_by_id(db, movie_id)

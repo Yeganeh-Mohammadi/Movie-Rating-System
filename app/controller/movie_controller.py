@@ -31,3 +31,12 @@ def rate_movie(movie_id: int, rating: RatingCreate, db: Session = Depends(get_db
     
     # فراخوانی از طریق سرویس
     return MovieService.add_rating(db=db, rating_data=rating, movie_id=movie_id)
+
+@router.get("/{movie_id}", response_model=MovieResponse)
+def get_movie_detail(movie_id: int, db: Session = Depends(get_db)):
+    movie = MovieService.get_movie_by_id(db, movie_id) 
+    if not movie:
+        raise HTTPException(status_code=404, detail="فیلم پیدا نشد")
+    return movie
+
+

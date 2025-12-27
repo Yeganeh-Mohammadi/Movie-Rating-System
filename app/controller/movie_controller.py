@@ -2,22 +2,40 @@ from fastapi import APIRouter, Depends, Query, status, HTTPException
 from sqlalchemy.orm import Session
 from app.db.database import get_db
 from app.services.movie_service import MovieService
-from app.schemas.movie import MovieResponse, MovieCreate, RatingCreate, RatingResponse 
+from app.schemas.movie import MovieResponse, MovieCreate, PaginatedMovieResponse, RatingCreate, RatingResponse 
 from app.models.models import Movie 
 from typing import List, Optional
 
 router = APIRouter(prefix="/movies", tags=["Movies"])
 
-@router.get("/", response_model=List[MovieResponse])
+@router.get("/", response_model=PaginatedMovieResponse)
 def read_movies(
-    page: int = Query(1, ge=1),
-    size: int = Query(10, ge=1, le=100),
-    title: Optional[str] = None,
-    year: Optional[int] = None,
-    genre: Optional[str] = None,
-    db: Session = Depends(get_db)):
-    return MovieService.list_movies(db, page, size, title, year, genre)
-
+    page: int = Query(1, ge=1, description="شماره صفحه"),
+    page_size: int = Query(10, ge=1, le=100, description="تعداد آیتم در هر صفحه"),
+    title: Optional[str] = Query(None, description="جستجو در عنوان فیلم"),
+    release_year: Optional[int] = Query(None, ge=1800, le=2100, description="سال انتشار"),
+    genre: Optional[str] = Query(None, description="فیلتر بر اساس ژانر"),
+    db: Session = Depends(get_db)
+):
+    try:
+        result = MovieService.list_movies(
+            db, page, page_size, title, release_year, genre
+        )
+        return {
+            "status": "success",
+            "data": result
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail={
+                "status": "failure",
+                "error": {
+                    "code": 500,
+                    "message": str(e)
+                }
+            }
+        )
 @router.post("/", response_model=MovieResponse, status_code=status.HTTP_201_CREATED)
 def create_movie(movie: MovieCreate, db: Session = Depends(get_db)):
     return MovieService.add_movie(db, movie)

@@ -5,6 +5,49 @@ from sqlalchemy import func
 
 class MovieRepository:
     @staticmethod
+    def get_movies(
+        db: Session, 
+        title: str = None, 
+        year: int = None, 
+        genre: str = None, 
+        skip: int = 0, 
+        limit: int = 10
+    ):
+        """دریافت فیلم‌ها با فیلتر و صفحه‌بندی"""
+        
+        # Query اصلی با JOIN به director و genres
+        query = db.query(Movie).options(
+            joinedload(Movie.director),
+            joinedload(Movie.genres)
+        )
+        
+        # فیلتر عنوان (جستجوی بخشی - case insensitive)
+        if title:
+            query = query.filter(Movie.title.ilike(f"%{title}%"))
+        
+        # فیلتر سال
+        if year:
+            query = query.filter(Movie.release_year == year)
+        
+        # فیلتر ژانر
+        if genre:
+            query = query.join(Movie.genres).filter(Genre.name.ilike(f"%{genre}%"))
+        
+        # محاسبه total قبل از pagination
+        total_items = query.count()
+        
+        # اعمال pagination
+        movies = query.offset(skip).limit(limit).all()
+        
+        # محاسبه میانگین امتیاز برای هر فیلم
+        for movie in movies:
+            avg_score = db.query(func.avg(MovieRating.score)).filter(
+                MovieRating.movie_id == movie.id
+            ).scalar()
+            movie.average_rating = round(avg_score, 1) if avg_score else None
+        
+        return movies, total_items
+    @staticmethod
     def get_movies(db: Session, title: str = None, year: int = None, genre: str = None, skip: int = 0, limit: int = 10):
         query = db.query(Movie)
         if title:

@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from app.repositories.movie_repository import MovieRepository
 from app.schemas.movie import RatingCreate
-
+from app.models.models import Genre, Movie
 class MovieService:
 
     @staticmethod
@@ -68,4 +68,32 @@ class MovieService:
         db.commit()
         return True
 
-    
+    @staticmethod
+    def update_movie(
+        db: Session,
+        movie_id: int,
+        movie_data
+    ):
+        movie = db.query(Movie).filter(Movie.id == movie_id).first()
+
+        if not movie:
+            return None
+
+        if movie_data.title is not None:
+            movie.title = movie_data.title
+
+        if movie_data.release_year is not None:
+            movie.release_year = movie_data.release_year
+
+        if movie_data.cast is not None:
+            movie.cast = movie_data.cast
+
+        if movie_data.genres is not None:
+            genres = db.query(Genre).filter(
+                Genre.id.in_(movie_data.genres)
+            ).all()
+            movie.genres = genres
+
+        db.commit()
+        db.refresh(movie)
+        return movie

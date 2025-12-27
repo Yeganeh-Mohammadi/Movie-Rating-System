@@ -68,3 +68,9 @@ class PaginatedMoviesData(BaseModel):
     page_size: int
     total_items: int
     items: List[MovieResponse]
+    
+class MovieUpdate(BaseModel):
+    title: Optional[str]
+    release_year: Optional[int]
+    cast: Optional[str]
+    genres: Optional[List[int]]

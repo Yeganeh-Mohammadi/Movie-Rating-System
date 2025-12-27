@@ -5,6 +5,7 @@ from app.services.movie_service import MovieService
 from app.schemas.movie import MovieResponse, MovieCreate, PaginatedMovieResponse, RatingCreate, RatingResponse 
 from app.models.models import Movie 
 from typing import List, Optional
+from app.schemas.movie import MovieUpdate
 
 router = APIRouter(prefix="/movies", tags=["Movies"])
 
@@ -72,3 +73,27 @@ def delete_movie(movie_id: int, db: Session = Depends(get_db)):
                 }
             }
         )
+@router.put("/{movie_id}", response_model=MovieResponse)
+def update_movie(
+    movie_id: int,
+    movie_data: MovieUpdate,
+    db: Session = Depends(get_db)
+):
+    movie = MovieService.update_movie(db, movie_id, movie_data)
+
+    if not movie:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "status": "failure",
+                "error": {
+                    "code": 404,
+                    "message": "Movie not found"
+                }
+            }
+        )
+
+    return {
+        "status": "success",
+        "data": movie
+    }

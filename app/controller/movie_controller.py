@@ -79,6 +79,7 @@ def update_movie(
     movie_data: MovieUpdate,
     db: Session = Depends(get_db)
 ):
+    
     movie = MovieService.update_movie(db, movie_id, movie_data)
 
     if not movie:

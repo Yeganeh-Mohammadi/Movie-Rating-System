@@ -7,6 +7,14 @@ class MovieBase(BaseModel):
     cast: str
     director_id: int
 
+class MovieUpdate(BaseModel):
+    """اسکیمای آپدیت - همه فیلدها اختیاری"""
+    title: Optional[str] = None
+    release_year: Optional[int] = None
+    cast: Optional[str] = None
+    director_id: Optional[int] = None
+    genre_ids: Optional[List[int]] = None
+
 class MovieCreate(MovieBase):
     genre_ids: List[int] # لیستی از آی‌دی ژانرها برای ثبت در جدول واسط
 
@@ -30,3 +38,41 @@ class RatingResponse(RatingCreate):
 
     class Config:
         from_attributes = True
+
+class DirectorInMovie(BaseModel):
+    """اسکیمای کارگردان برای نمایش در لیست فیلم‌ها"""
+    id: int
+    name: str
+
+    class Config:
+        from_attributes = True
+
+class MovieListItem(BaseModel):
+    """اسکیمای هر فیلم در لیست"""
+    id: int
+    title: str
+    release_year: int
+    director: DirectorInMovie
+    genres: List[str]  # فقط اسم ژانرها
+    average_rating: Optional[float] = None
+
+    class Config:
+        from_attributes = True
+
+class PaginatedMovieResponse(BaseModel):
+    status: str
+    data: List[MovieResponse]
+    page: int
+    page_size: int
+    total: int
+
+class ErrorResponse(BaseModel):
+    """پاسخ خطا"""
+    status: str = "failure"
+    error: dict
+
+class PaginatedMoviesData(BaseModel):
+    page: int
+    page_size: int
+    total_items: int
+    items: List[MovieResponse]

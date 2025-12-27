@@ -56,3 +56,16 @@ class MovieService:
     @staticmethod
     def get_movie_by_id(db: Session, movie_id: int):
         return MovieRepository.get_movie_by_id(db, movie_id)
+    
+    @staticmethod
+    def delete_movie(db: Session, movie_id: int):
+        movie = db.query(Movie).filter(Movie.id == movie_id).first()
+
+        if not movie:
+            return None
+
+        db.delete(movie)
+        db.commit()
+        return True
+
+    

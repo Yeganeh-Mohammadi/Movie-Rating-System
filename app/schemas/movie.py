@@ -7,14 +7,6 @@ class MovieBase(BaseModel):
     cast: str
     director_id: int
 
-class MovieUpdate(BaseModel):
-    """اسکیمای آپدیت - همه فیلدها اختیاری"""
-    title: Optional[str] = None
-    release_year: Optional[int] = None
-    cast: Optional[str] = None
-    director_id: Optional[int] = None
-    genre_ids: Optional[List[int]] = None
-
 class MovieCreate(MovieBase):
     genre_ids: List[int] # لیستی از آی‌دی ژانرها برای ثبت در جدول واسط
 

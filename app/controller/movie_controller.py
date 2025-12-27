@@ -57,4 +57,18 @@ def get_movie_detail(movie_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="فیلم پیدا نشد")
     return movie
 
+@router.delete("/{movie_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_movie(movie_id: int, db: Session = Depends(get_db)):
+    deleted = MovieService.delete_movie(db, movie_id)
 
+    if not deleted:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "status": "failure",
+                "error": {
+                    "code": 404,
+                    "message": "Movie not found"
+                }
+            }
+        )

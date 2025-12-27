@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# آدرس دیتابیس را در فایل .env قرار بده
+
 DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://user:password@localhost:5432/movie_db")
 
 engine = create_engine(DATABASE_URL)

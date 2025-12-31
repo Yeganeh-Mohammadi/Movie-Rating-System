@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, Table, Float
-from sqlalchemy.orm import relationship, declarative_base
+from sqlalchemy.orm import relationship
+from app.db.database import Base
 
-Base = declarative_base()
 
 movie_genres = Table(
     "movie_genres",

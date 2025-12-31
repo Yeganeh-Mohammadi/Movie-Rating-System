@@ -1,9 +1,8 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, Table, Float
-from sqlalchemy.orm import relationship, declarative_base
+from sqlalchemy.orm import relationship
+from app.db.database import Base
 
-Base = declarative_base()
 
-# جدول میانی برای رابطه چند به چند فیلم و ژانر (صفحه 3 و 4 فایل)
 movie_genres = Table(
     "movie_genres",
     Base.metadata,
@@ -25,12 +24,11 @@ class Movie(Base):
     title = Column(String, nullable=False)
     release_year = Column(Integer)
     cast = Column(String)
-    director_id = Column(Integer, ForeignKey("directors.id"))
+    director_id = Column(Integer, ForeignKey("directors.id"), nullable=True) 
     
     director = relationship("Director", back_populates="movies")
     genres = relationship("Genre", secondary=movie_genres, back_populates="movies")
-    ratings = relationship("MovieRating", back_populates="movie", cascade="all, delete-orphan")
-
+ 
 class Genre(Base):
     __tablename__ = "genres"
     id = Column(Integer, primary_key=True, index=True)
@@ -42,5 +40,7 @@ class MovieRating(Base):
     __tablename__ = "movie_ratings"
     id = Column(Integer, primary_key=True, index=True)
     movie_id = Column(Integer, ForeignKey("movies.id"))
-    score = Column(Integer, nullable=False) # باید بین 1 تا 10 باشد
-    movie = relationship("Movie", back_populates="ratings")
+    user_id = Column(Integer, nullable=True)
+    score = Column(Integer, nullable=False)
+    comment = Column(String, nullable=True)
+    movie = relationship("Movie")

@@ -1,15 +1,16 @@
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, declarative_base
 import os
 from dotenv import load_dotenv
 
 load_dotenv()
 
-# آدرس دیتابیس را در فایل .env قرار بده
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://user:password@localhost/dbname")
+
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://user:password@localhost:5432/movie_db")
 
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+Base = declarative_base()
 
 def get_db():
     db = SessionLocal()

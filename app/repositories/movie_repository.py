@@ -1,6 +1,5 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from app.models.models import Movie, Genre, MovieRating
-from app.schemas.movie import MovieCreate, RatingCreate 
 from sqlalchemy import func
 
 class MovieRepository:
@@ -8,7 +7,7 @@ class MovieRepository:
     def get_movies(
         db: Session, 
         title: str = None, 
-        year: int = None, 
+        release_year: int = None, 
         genre: str = None, 
         skip: int = 0, 
         limit: int = 10
@@ -26,9 +25,9 @@ class MovieRepository:
             query = query.filter(Movie.title.ilike(f"%{title}%"))
         
         # فیلتر سال
-        if year:
-            query = query.filter(Movie.release_year == year)
-        
+        if release_year:
+            query = query.filter(Movie.release_year == release_year)
+
         # فیلتر ژانر
         if genre:
             query = query.join(Movie.genres).filter(Genre.name.ilike(f"%{genre}%"))
@@ -41,41 +40,23 @@ class MovieRepository:
         
         # محاسبه میانگین امتیاز برای هر فیلم
         for movie in movies:
-            avg_score = db.query(func.avg(MovieRating.score)).filter(
-                MovieRating.movie_id == movie.id
-            ).scalar()
-            movie.average_rating = round(avg_score, 1) if avg_score else None
-        
+            stats = db.query(func.avg(MovieRating.score), func.count(MovieRating.id)).filter(MovieRating.movie_id == movie.id).first()
+            movie.average_rating = round(stats[0], 1) if stats[0] else 0.0
+            movie.ratings_count = stats[1]
         return movies, total_items
-    @staticmethod
-    def get_movies(db: Session, title: str = None, year: int = None, genre: str = None, skip: int = 0, limit: int = 10):
-        query = db.query(Movie)
-        if title:
-            query = query.filter(Movie.title.contains(title))
-        if year:
-            query = query.filter(Movie.release_year == year)
-        if genre:
-            query = query.join(Movie.genres).filter(Genre.name == genre)
-        return query.offset(skip).limit(limit).all()
 
     @staticmethod
-    def create(db: Session, movie_data: MovieCreate):
-        db_movie = Movie(
-            title=movie_data.title,
-            release_year=movie_data.release_year,
-            cast=movie_data.cast,
-            director_id=movie_data.director_id
-        )
+    def create(db: Session, movie_data):
+        db_movie = Movie(title=movie_data.title, release_year=movie_data.release_year, cast=movie_data.cast, director_id=movie_data.director_id)
         if movie_data.genre_ids:
-            genres = db.query(Genre).filter(Genre.id.in_(movie_data.genre_ids)).all()
-            db_movie.genres = genres
+            db_movie.genres = db.query(Genre).filter(Genre.id.in_(movie_data.genre_ids)).all()
         db.add(db_movie)
         db.commit()
         db.refresh(db_movie)
         return db_movie
     
     @staticmethod
-    def create_rating(db: Session, rating_data: RatingCreate, movie_id: int):
+    def create_rating(db: Session, rating_data, movie_id: int):
         db_rating = MovieRating(
             score=rating_data.score,
             comment=rating_data.comment,
@@ -89,13 +70,9 @@ class MovieRepository:
 
     @staticmethod
     def get_movie_by_id(db: Session, movie_id: int):
-        # پیدا کردن فیلم
-        movie = db.query(Movie).filter(Movie.id == movie_id).first()
-        
+        movie = db.query(Movie).options(joinedload(Movie.director), joinedload(Movie.genres)).filter(Movie.id == movie_id).first()
         if movie:
-            # محاسبه میانگین امتیازات از جدول MovieRating
-            avg_score = db.query(func.avg(MovieRating.score)).filter(MovieRating.movie_id == movie_id).scalar()
-            # اضافه کردن مقدار به آبجکت فیلم (اسکیما خودش این رو میگیره و نشون میده)
-            movie.average_rating = round(avg_score, 1) if avg_score else 0.0
-            
+            stats = db.query(func.avg(MovieRating.score), func.count(MovieRating.id)).filter(MovieRating.movie_id == movie_id).first()
+            movie.average_rating = round(stats[0], 1) if stats[0] else 0.0
+            movie.ratings_count = stats[1]
         return movie

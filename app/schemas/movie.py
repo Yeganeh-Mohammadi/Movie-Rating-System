@@ -1,76 +1,70 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from typing import List, Optional
+
+class DirectorInMovie(BaseModel):
+    id: int
+    name: str
+    class Config:
+        from_attributes = True
 
 class MovieBase(BaseModel):
     title: str
     release_year: int
     cast: str
-    director_id: int
 
 class MovieCreate(MovieBase):
-    genre_ids: List[int] # لیستی از آی‌دی ژانرها برای ثبت در جدول واسط
+    director_id: int
+    genre_ids: List[int]
 
-class MovieResponse(MovieBase):
-    id: int
-    # فیلد زیر برای نمایش میانگین نمرات اضافه می‌شود
-    average_rating: Optional[float] = Field(0.0, description="میانگین امتیازات فیلم")
-
-    class Config:
-        from_attributes = True
+class MovieUpdate(BaseModel):
+    title: Optional[str] = None
+    release_year: Optional[int] = None
+    cast: Optional[str] = None
+    genres: Optional[List[int]] = None
 
 class RatingCreate(BaseModel):
-    score: int = Field(..., ge=1, le=5, description="امتیاز باید بین 1 تا 5 باشد")
-    comment: Optional[str] = None
+    score: int = Field(..., ge=1, le=10) 
     user_id: Optional[int] = None
+    comment: Optional[str] = None
 
-# اسکیمای خروجی برای نمایش امتیاز
-class RatingResponse(RatingCreate):
+class RatingResponse(BaseModel):
     id: int
     movie_id: int
-
+    score: int
     class Config:
         from_attributes = True
 
-class DirectorInMovie(BaseModel):
-    """اسکیمای کارگردان برای نمایش در لیست فیلم‌ها"""
-    id: int
-    name: str
-
-    class Config:
-        from_attributes = True
-
-class MovieListItem(BaseModel):
-    """اسکیمای هر فیلم در لیست"""
+class MovieResponse(BaseModel):
     id: int
     title: str
     release_year: int
+    cast: str
     director: DirectorInMovie
-    genres: List[str]  # فقط اسم ژانرها
-    average_rating: Optional[float] = None
+    genres: List[str]
+    average_rating: float = 0.0
+    ratings_count: int = 0
+
+    @field_validator('genres', mode='before')
+    @classmethod
+    def transform_genres(cls, v):
+        # تبدیل خودکار آبجکت ژانر به نام رشته‌ای برای جلوگیری از ارور 500
+        if isinstance(v, list) and len(v) > 0 and not isinstance(v[0], str):
+            return [g.name for g in v]
+        return v
 
     class Config:
         from_attributes = True
-
-class PaginatedMovieResponse(BaseModel):
-    status: str
-    data: List[MovieResponse]
-    page: int
-    page_size: int
-    total: int
-
-class ErrorResponse(BaseModel):
-    """پاسخ خطا"""
-    status: str = "failure"
-    error: dict
 
 class PaginatedMoviesData(BaseModel):
     page: int
     page_size: int
     total_items: int
     items: List[MovieResponse]
-    
-class MovieUpdate(BaseModel):
-    title: Optional[str]
-    release_year: Optional[int]
-    cast: Optional[str]
-    genres: Optional[List[int]]
+
+class PaginatedMovieResponse(BaseModel):
+    status: str = "success"
+    data: PaginatedMoviesData
+
+class StandardResponse(BaseModel):
+    status: str = "success"
+    data: MovieResponse

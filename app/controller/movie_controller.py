@@ -69,7 +69,7 @@ def create_movie(movie: MovieCreate, db: Session = Depends(get_db)):
 @router.post("/{movie_id}/ratings", status_code=status.HTTP_201_CREATED)
 def rate_movie(movie_id: int, rating: RatingCreate, db: Session = Depends(get_db)):
     # WARNING — امتیاز نامعتبر
-    if rating.score < 1 or rating.score > 5:
+    if rating.score < 1 or rating.score > 10:
         ratings_logger.warning(
             "Invalid rating value",
             extra={
